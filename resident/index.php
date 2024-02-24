@@ -193,7 +193,7 @@ $countAnnounment = count($announcements) > 0 ? true : false;
    
     <div class="pb-20 row">
         
-      <div class='col-12 col-md-8 pl-5'>
+      <div id='getTableResize' class='col-12 col-md-12 pl-5'>
     <div class="pd-20">
         <h2 class="text-blue h4 pt-5">HISTORY</h2>
     </div>
@@ -204,6 +204,7 @@ $countAnnounment = count($announcements) > 0 ? true : false;
                     <th>REQUEST DATE</th>
                     <th>EXPIRY DATE</th>
                     <th>VALIDITY PERIOD (DAYS)</th>
+                    <th>Request Status</th>
                    
                    
                 </tr>
@@ -211,23 +212,46 @@ $countAnnounment = count($announcements) > 0 ? true : false;
             <tbody>
                 <?php
                 // Fetch history data from tblrequest for the current user
-                $history_query = mysqli_query($conn, "SELECT * FROM tblrequest WHERE empid = '$session_id' ORDER BY empid DESC ");
+                $history_query = mysqli_query($conn, "SELECT * FROM tblrequest WHERE empid = '$session_id' GROUP BY RequestType,PostingDate ");
                 while ($row = mysqli_fetch_assoc($history_query)) {
 
                     $getApproval = '';
 
-                    $status = $stats = $row['Status'];
-                    $adminStats = $stats = $row['admin_status'];
+                    $status = $row['Status'];
+                    $adminStats = $row['admin_status'];
+                    $isStaff = false;
+                    $isAdmin = false;
 
 
-                    if ($status == 1 && $adminStats == 1) {
+                    if ($status == '1' && $adminStats == '1') {
                         $getApproval = 'Approved';
                     }
-                    if ($status === 0 || $adminStats == 0) {
+                    if ($status == '0' || $adminStats == '0') {
                         $getApproval = 'Pending';
-                    } else {
+                    }
+                    if ($status == '1' && $adminStats == '0') {
+                        $getApproval = 'Waiting staff approval';
+                        $isStaff = true;
+                    }
+
+                    if ($status == '0' && $adminStats == '1') {
+                        $getApproval = 'Waiting admin approval';
+                        $isAdmin = true;
+
+                    }
+                    if ($status == '2' || $adminStats == '2') {
                         $getApproval = 'Rejected';
                     }
+
+                    $parseRequest = json_encode(array('status' => $getApproval, 'name' => $row['RequestType']));
+
+                
+
+                    $requestApproval = htmlspecialchars(str_replace('\\', '', $parseRequest));
+
+
+
+
 
 
                     ?>
@@ -241,10 +265,12 @@ $countAnnounment = count($announcements) > 0 ? true : false;
                         <td>
                             <?php echo $row['ToDate']; ?>
                         </td>
-                        <td>
+                        <td >
                             <?php echo $row['num_days']; ?>
                         </td>
-        
+                          <td>
+                          <span id='getRequestType' onclick="getIndividualRequest(<?php echo $requestApproval; ?>)" class='btn btn-outline-primary'>Track</span>
+                        </td>
         
                     </tr>
                     <?php
@@ -253,55 +279,25 @@ $countAnnounment = count($announcements) > 0 ? true : false;
             </tbody>
         </table>
       </div>
-        <section class='col-12 col-md-4 py-5'>
-                    <h2 class="text-blue h4 text-center">Status of approval</h2>
-            <div style="max-height:21rem;overflow:auto;" class="profile-timeline">
-                    
-            <?php
-                $queryHistory = mysqli_query($conn, "SELECT * FROM tblrequest WHERE empid = '$session_id' GROUP BY RequestType  ");
-                while ($row = mysqli_fetch_assoc($queryHistory)) {
-                        $id = $row['id'];
-                        ?>
-                        <div class="timeline-month">
-                            <h5>
-                                <?php echo $row['PostingDate']; ?>
-                            </h5>
-                        </div>
-                        <div class="profile-timeline-list">
-                            <ul>
-                
-                                <li>
-                                    <!-- <div class="date">
-                                        <?php echo $row['num_days']; ?> Days
-                                    </div> -->
-                                    <div class="task-name"><i class="ion-ios-chatboxes"></i>
-                                        <?php echo $row['RequestType']; ?>
-                                    </div>
-                                    <!-- <p>
-                                        <?php echo $row['Description']; ?>
-                                    </p> -->
-                
-                                    <div class="task-time">
-                                        <?php $stats = $row['Status'];
-                                        if ($stats == 1) {
-                                            ?>
-                                            <span style="color: green">Approved</span>
-                                        <?php }
-                                        if ($stats == 2) { ?>
-                                            <span style="color: red">Rejected</span>
-                                        <?php }
-                                        if ($stats == 0) { ?>
-                                            <span style="color: blue">Pending</span>
-                                        <?php } ?>
-                                    </div>
-                
-                                </li>
-                
-                
-                            </ul>
-                        </div>
-                    <?php } ?>
+      <style>
+        .onhover:hover{
+            color:#524d7d;
+            font-size:1.2rem;
+            scale:2;
+        }
+      </style>
+        <section style="border-left:1px solid #eaeaea;" id='secReqApproval' class='col-12 col-md-4 py-5 d-none'>
+                <div class='row card-body'>
+                      <div  class='col-8 col-md-8 offset-md-1 mx-auto'>
+                        <h2  class="text-blue h4 text-center">Status of approval</h2>
+                      </div>
+                      <div id='requestStatusHide' class='col-3 col-md-3'>
+                        <h2 style="cursor:pointer;" class="h4 text-center onhover">&times</h2>
+                      </div>
                 </div>
+            <div id="requestTimeline" style="max-height:21rem;overflow:auto;" class="profile-timeline">
+                 
+            </div>
                
         </section>
     </div>
@@ -353,4 +349,39 @@ $countAnnounment = count($announcements) > 0 ? true : false;
 </body>
 </html>
 
+<<script>
+
+function getIndividualRequest(data){
+    console.log(data);
+    $('#getTableResize').removeClass('col-md-12')
+    $('#getTableResize').addClass('col-md-8')
+
+    $('#secReqApproval').removeClass('d-none');
+
+    const element = `  <div class="profile-timeline-list">
+                            <ul>
+                
+                                <li>
+                                 <div class="task-name"><i class="ion-ios-chatboxes"></i>
+                                    ${data.name}
+                                </div>
+                                <span style="color: ${data.status == 'Approved' ? 'green' : data.status == 'Rejected' ? 'red' : 'blue' }">${data.status}</span>
+                                </li>
+                
+                
+                            </ul>
+                        </div>`;
+
+    $('#requestTimeline').html(element);
+}
+
+$('#requestStatusHide').on('click',function(){
+     $('#getTableResize').addClass('col-md-12');
+    $('#getTableResize').removeClass('col-md-8');
+    $('#secReqApproval').addClass('d-none');
+
+
+})
+
+</script>
 

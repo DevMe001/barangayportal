@@ -93,31 +93,8 @@ $complaints = mysqli_fetch_all($complaintsResult, MYSQLI_ASSOC);
             <!-- Complaint History -->
             <div class="card-box mb-30">
                 <div style="gap:0.5rem;"  class="pd-20 d-flex justify-content-start align-items-baseline">
-                    <h2 class="text-blue h4">Complaint History</h2>
-                    <div>
-           <div style="gap:0.5rem;" class="d-flex justify-content-between align-items-center">
-                    
-                       
-                <div style='width: 35px;
-                height: 31px;
-                background: #df0f0f;
-                border-radius: 100%;
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                color: #ffffff;
-                padding: 0.4rem;'>
-                           <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-bell-fill" viewBox="0 0 16 16">
-  <path d="M8 16a2 2 0 0 0 2-2H6a2 2 0 0 0 2 2m.995-14.901a1 1 0 1 0-1.99 0A5 5 0 0 0 3 6c0 1.098-.5 6-2 7h14c-1.5-1-2-5.902-2-7 0-2.42-1.72-4.44-4.005-4.901"/>
-                </svg>  <sup style='font-size:0.8rem;' class='sub'>
-                    <?php echo count($complaints) > 0 ? count($complaints) : 0 ?>
-
-                </sup>
-              </div>
-                          
-                 
-            </div>
-                    </div>
+                    <h2 class="text-blue h4">Complaint History (<?php echo count($complaints) > 0 ? count($complaints) : 0 ?>)</h2>
+                   
                 </div>
                 <div class="pb-20">
                     <table class="data-table table stripe hover nowrap">
@@ -144,12 +121,32 @@ $complaints = mysqli_fetch_all($complaintsResult, MYSQLI_ASSOC);
                                     <td>
                                         <?php if (!empty($complaint['feedback'])): ?>
                                             <!-- Display feedback button if feedback exists -->
-                                            <a href="#" style='background:#524d7d' class="btn btn-secondary" data-toggle="modal" data-target="#feedbackModal<?php echo $complaint['id']; ?>">
-                                                View  
+                                            <a href="#" style='background:#524d7d' class="btn btn-secondary text-center ml-10" data-toggle="modal" data-target="#feedbackModal<?php echo $complaint['id']; ?>">
+                                                <div style="gap:1rem;"" class="d-flex justify-content-around align-items-center">
+                                                        View     <div style='
+                                   width: 25px;
+                                    height: 30;
+                                    background: rgba(255, 0, 0,0.5);
+                                    border-radius: 100%;
+                                    display: flex;
+                                    justify-content: center;
+                                    align-items: center;
+                                    color: #ffffff;
+                                    padding: 0.2rem;
+                                    position:relative;
+                                    '>
+                           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-bell-fill" viewBox="0 0 16 16">
+  <path d="M8 16a2 2 0 0 0 2-2H6a2 2 0 0 0 2 2m.995-14.901a1 1 0 1 0-1.99 0A5 5 0 0 0 3 6c0 1.098-.5 6-2 7h14c-1.5-1-2-5.902-2-7 0-2.42-1.72-4.44-4.005-4.901"/>
+                </svg>  <sup style='font-size:0.6rem;position:absolute; top:0.6rem;left:1.3rem;font-weight:700; color:#ff0000;' class='sub'>
+                 !
+                                                
+                                                    </sup>
+                                                </div>
+                                                </div>
                                             </a>
                                         <?php else: ?>
                                             <!-- Display clickable feedback button if no feedback exists -->
-                                               <a href="#" style='background:#524d7d' class="btn btn-secondary" data-toggle="modal" data-target="#feedbackModal<?php echo $complaint['id']; ?>">
+                                               <a href="#" style='background:rgba(82, 77, 125, 0.7);min-width:7rem;border:none;outline:none;' class="btn btn-secondary" data-toggle="modal" data-target="#feedbackModal<?php echo $complaint['id']; ?>">
                                                 View  
                                             </a>
                                         <?php endif; ?>
